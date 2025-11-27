@@ -78,14 +78,20 @@ class ScribdDownloader {
             const clientHeight = await container.evaluate(el => el.clientHeight);
             let cur = await container.evaluate(el => el.scrollTop);
             const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-            bar.start(height, 0);
+            if (!process.env.APPWRITE_FUNCTION_ID) {
+                bar.start(height, 0);
+            }
             while (cur + clientHeight < height) {
                 await page.keyboard.press('PageDown');
                 await new Promise(resolve => setTimeout(resolve, rendertime))
                 cur = await container.evaluate(el => el.scrollTop);
-                bar.update(cur + clientHeight);
+                if (!process.env.APPWRITE_FUNCTION_ID) {
+                    bar.update(cur + clientHeight);
+                }
             }
-            bar.stop();
+            if (!process.env.APPWRITE_FUNCTION_ID) {
+                bar.stop();
+            }
 
             // remove margin to avoid extra blank page
             let doc_pages = await page.$$("div.outer_page_container div[id^='outer_page_']")
@@ -160,7 +166,9 @@ class ScribdDownloader {
             let doc_pages = await page.$$("div.outer_page_container div[id^='outer_page_']")
             let images = []
             const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-            bar.start(doc_pages.length, 0);
+            if (!process.env.APPWRITE_FUNCTION_ID) {
+                bar.start(doc_pages.length, 0);
+            }
             for (let i = 0; i < doc_pages.length; i++) {
                 await page.evaluate((i) => { // eslint-disable-next-line
                     document.getElementById(`outer_page_${(i + 1)}`).scrollIntoView()
@@ -183,9 +191,13 @@ class ScribdDownloader {
                     metadata.width,
                     metadata.height
                 ))
-                bar.update(i + 1);
+                if (!process.env.APPWRITE_FUNCTION_ID) {
+                    bar.update(i + 1);
+                }
             }
-            bar.stop();
+            if (!process.env.APPWRITE_FUNCTION_ID) {
+                bar.stop();
+            }
 
             // generate pdf
             const pdfPath = `${output}/${sanitize(filename == "title" ? title : id)}.pdf`

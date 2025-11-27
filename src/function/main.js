@@ -49,8 +49,10 @@ export default async ({ req, res, log, error }) => {
 
         log(`PDF generated at: ${pdfPath}`);
 
-        // Read the file buffer
+        // Read the file buffer and convert to base64
         const pdfBuffer = fs.readFileSync(pdfPath);
+        const base64Data = pdfBuffer.toString('base64');
+        const filename = pdfPath.split('/').pop();
 
         // Clean up file after reading
         try {
@@ -59,15 +61,26 @@ export default async ({ req, res, log, error }) => {
             log(`Warning: Failed to delete temp file ${pdfPath}: ${e.message}`);
         }
 
-        // Return the PDF
-        return res.send(pdfBuffer, 200, {
+        // Return the PDF as Base64 JSON
+        return res.send(JSON.stringify({
+            filename: filename,
+            content: base64Data,
+            encoding: 'base64'
+        }), 200, {
             ...corsHeaders,
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="${pdfPath.split('/').pop()}"`
+            'Content-Type': 'application/json'
         });
 
     } catch (err) {
         error(`Error processing request: ${err.message}`);
-        return res.send(`Error: ${err.message}`, 500, corsHeaders);
+        error(err.stack);
+        return res.send(JSON.stringify({
+            error: err.message,
+            stack: err.stack,
+            type: err.name
+        }), 500, {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+        });
     }
 };
