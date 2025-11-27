@@ -4,7 +4,7 @@ import { pdfGenerator } from "../utils/io/PdfGenerator.js";
 import { configLoader } from "../utils/io/ConfigLoader.js";
 import { directoryIo } from "../utils/io/DirectoryIo.js"
 import * as scribdRegex from "../const/ScribdRegex.js"
-import * as scribdFlag  from '../const/ScribdFlag.js'
+import * as scribdFlag from '../const/ScribdFlag.js'
 import { Image } from "../object/Image.js"
 import sharp from "sharp";
 import path from 'path'
@@ -33,7 +33,7 @@ class ScribdDownloader {
             fn = this.embeds_default
         }
         if (url.match(scribdRegex.DOCUMENT)) {
-            await fn(`https://www.scribd.com/embeds/${scribdRegex.DOCUMENT.exec(url)[2]}/content`)
+            await fn(`https://www.scribd.com/embeds/${scribdRegex.DOCUMENT.exec(url)[1]}/content`)
         } else if (url.match(scribdRegex.EMBED)) {
             await fn(url)
         } else {
@@ -106,7 +106,7 @@ class ScribdDownloader {
             await page.evaluate(() => { // eslint-disable-next-line
                 document.body.innerHTML = document.querySelector("div.outer_page_container").innerHTML
             })
-            
+
             await directoryIo.create(path.dirname(options.path))
             await page.pdf(options);
             console.log(`Generated: ${options.path}`)

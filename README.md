@@ -82,7 +82,10 @@ npm start "https://www.everand.com/listen/podcast/731670963"
 
 ## Support URL Format ##
 - https://www.scribd.com/doc/**
+- https://www.scribd.com/document/**
+- https://www.scribd.com/presentation/**
 - https://www.scribd.com/embeds/**
+- (Supports international domains like es.scribd.com)
 - https://www.slideshare.net/**
 - https://www.slideshare.net/slideshow/**
 - https://www.everand.com/podcast-show/**
