@@ -38,7 +38,7 @@ class PdfGenerator {
                 doc.end();
                 writeStream.on('finish', () => {
                     console.log(`Generated: ${dest}`)
-                    resolve()
+                    resolve(dest)
                 });
             } else {
                 reject("no images")

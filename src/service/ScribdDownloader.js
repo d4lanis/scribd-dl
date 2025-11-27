@@ -9,11 +9,8 @@ import { Image } from "../object/Image.js"
 import sharp from "sharp";
 import path from 'path'
 import sanitize from "sanitize-filename";
+import os from 'os';
 
-
-const output = configLoader.load("DIRECTORY", "output")
-const filename = configLoader.load("DIRECTORY", "filename")
-const rendertime = parseInt(configLoader.load("SCRIBD", "rendertime"))
 
 class ScribdDownloader {
     constructor() {
@@ -23,25 +20,34 @@ class ScribdDownloader {
         return ScribdDownloader.instance
     }
 
-    async execute(url, flag) {
+    async execute(url, flag, options = {}) {
+        // Load config or use options
+        const output = options.output || configLoader.load("DIRECTORY", "output")
+        const filename = options.filename || configLoader.load("DIRECTORY", "filename")
+        const rendertime = parseInt(options.rendertime || configLoader.load("SCRIBD", "rendertime"))
+
         let fn;
         if (flag === scribdFlag.IMAGE) {
             console.log(`Mode: IMAGE`)
-            fn = this.embeds_image
+            fn = this.embeds_image.bind(this)
         } else {
             console.log(`Mode: DEFAULT`)
-            fn = this.embeds_default
+            fn = this.embeds_default.bind(this)
         }
+
+        const context = { output, filename, rendertime }
+
         if (url.match(scribdRegex.DOCUMENT)) {
-            await fn(`https://www.scribd.com/embeds/${scribdRegex.DOCUMENT.exec(url)[1]}/content`)
+            return await fn(`https://www.scribd.com/embeds/${scribdRegex.DOCUMENT.exec(url)[1]}/content`, context)
         } else if (url.match(scribdRegex.EMBED)) {
-            await fn(url)
+            return await fn(url, context)
         } else {
             throw new Error(`Unsupported URL: ${url}`)
         }
     }
 
-    async embeds_default(url) {
+    async embeds_default(url, context) {
+        const { output, filename, rendertime } = context;
         const m = scribdRegex.EMBED.exec(url)
         if (m) {
             let id = m[1]
@@ -113,12 +119,15 @@ class ScribdDownloader {
 
             await page.close()
             await puppeteerSg.close()
+
+            return options.path
         } else {
             throw new Error(`Unsupported URL: ${url}`)
         }
     }
 
-    async embeds_image(url) {
+    async embeds_image(url, context) {
+        const { output, filename } = context;
         let deviceScaleFactor = 2
         const m = scribdRegex.EMBED.exec(url)
         if (m) {
@@ -179,13 +188,16 @@ class ScribdDownloader {
             bar.stop();
 
             // generate pdf
-            await pdfGenerator.generate(images, `${output}/${sanitize(filename == "title" ? title : id)}.pdf`)
+            const pdfPath = `${output}/${sanitize(filename == "title" ? title : id)}.pdf`
+            await pdfGenerator.generate(images, pdfPath)
 
             // remove temp dir
             directoryIo.remove(`${dir}`)
 
             await page.close()
             await puppeteerSg.close()
+
+            return pdfPath
         } else {
             throw new Error(`Unsupported URL: ${url}`)
         }

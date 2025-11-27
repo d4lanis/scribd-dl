@@ -91,7 +91,31 @@ npm start "https://www.everand.com/listen/podcast/731670963"
 - https://www.everand.com/podcast-show/**
 - https://www.everand.com/podcast/**
 - https://www.everand.com/listen/podcast/**
+- https://www.everand.com/listen/podcast/**
 
+## Appwrite Function ##
+
+This project can be deployed as an Appwrite Function.
+
+### Setup
+1. Create a `.env` file with your remote browser configuration (e.g., Browserless.io):
+   ```env
+   BROWSER_WS_ENDPOINT=wss://chrome.browserless.io?token=YOUR_TOKEN
+   ```
+   *Note: This is required because Appwrite Functions cannot run Docker containers (needed for local Puppeteer).*
+
+### Local Testing
+Run the local test script to simulate an Appwrite function execution:
+```console
+node test/local-function-run.js
+```
+
+### Deployment
+1. Zip the project files (excluding `node_modules`).
+2. Create a new Function in Appwrite (Node.js runtime).
+3. Upload the zip file.
+4. Set the `BROWSER_WS_ENDPOINT` environment variable in Appwrite.
+5. Set the entry point to `src/function/main.js`.
 ## Development Plan ##
 
 - Scribd obfuscates the .pdf files, the texts copied from the documents might become strange garbled message. De-obfuscating is one of the future plan.
